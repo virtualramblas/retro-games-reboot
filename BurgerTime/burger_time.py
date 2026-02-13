@@ -18,6 +18,7 @@ platforms = []
 for y in PLATFORM_Y:
     platforms.append(pygame.Rect(0, y + 50, SCREEN_WIDTH, 10))
 
+game_over = False
 
 # --- Setup ---
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -56,6 +57,11 @@ class Player(pygame.sprite.Sprite):
 
         self.animation_timer = 0
         self.current_frame = 0
+
+        self.invulnerable = False
+        self.invuln_timer = 0
+        self.alive = True
+
 
     def update(self, keys, platforms, ladders):
         self.on_platform = False
@@ -110,6 +116,13 @@ class Player(pygame.sprite.Sprite):
                 self.current_frame = (self.current_frame + 1) % len(self.frames)
                 self.image = self.frames[self.current_frame]
                 self.animation_timer = 0
+
+        # Handle invulnerability timer
+        if self.invulnerable:
+            self.invuln_timer -= 1
+            if self.invuln_timer <= 0:
+                self.invulnerable = False
+
             
     def spray(self, enemies):
         if self.pepper <= 0:
@@ -118,6 +131,18 @@ class Player(pygame.sprite.Sprite):
         for enemy in enemies:
             if abs(enemy.rect.x - self.rect.x) < 60 and abs(enemy.rect.y - self.rect.y) < 40:
                 enemy.freeze()
+
+    def hit(self):
+        if self.invulnerable or not self.alive:
+            return
+
+        self.lives -= 1
+        self.invulnerable = True
+        self.invuln_timer = 120  # 2 seconds at 60 FPS
+
+        if self.lives <= 0:
+            self.alive = False
+
 
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, x, y, sprite_name):
@@ -219,14 +244,19 @@ def check_enemy_drop():
 
 def check_collisions():
     if pygame.sprite.spritecollideany(player, enemies):
-        player.lives -= 1
-        player.rect.center = (100, PLATFORM_Y[0])
-        pygame.time.delay(500)
+        player.hit()
 
 def draw_ui():
     screen.blit(font.render(f"Score: {player.score}", True, (255,255,255)), (10, 10))
     screen.blit(font.render(f"Lives: {player.lives}", True, (255,255,255)), (10, 35))
     screen.blit(font.render(f"Pepper: {player.pepper}", True, (255,255,255)), (10, 60))
+
+def draw_game_over():
+    text1 = font.render("GAME OVER", True, (255, 50, 50))
+    text2 = font.render("Press R to Restart", True, (255, 255, 255))
+
+    screen.blit(text1, (SCREEN_WIDTH//2 - text1.get_width()//2, SCREEN_HEIGHT//2 - 40))
+    screen.blit(text2, (SCREEN_WIDTH//2 - text2.get_width()//2, SCREEN_HEIGHT//2))
 
 # --- Main Loop ---
 
@@ -243,14 +273,29 @@ while running:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 player.spray(enemies)
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_r and game_over:
+                player.lives = 3
+                player.alive = True
+                player.invulnerable = False
+                player.rect.center = (100, PLATFORM_Y[0])
+                game_over = False
 
-    player.update(keys, platforms, ladders)
-    enemies.update(player)
-    ingredients.update()
 
-    check_ingredient_drop()
-    check_enemy_drop()
-    check_collisions()
+    if not player.alive:
+        game_over = True
+
+    if not game_over:
+        player.update(keys, platforms, ladders)
+        enemies.update(player)
+        ingredients.update()
+
+        check_ingredient_drop()
+        check_enemy_drop()
+        check_collisions()
+
+    if game_over:
+        draw_game_over()
 
     draw_platforms()
     ladders.draw(screen)
