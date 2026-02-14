@@ -98,9 +98,35 @@ class Game:
     def draw_ui(self):
         lives_text = self.font.render(f"Lives: {self.player.lives}", True, (255,255,255))
         score_text = self.font.render(f"Score: {self.score}", True, (255,255,255))
+        pepper_text = self.font.render(f"Pepper: {self.player.pepper}", True, (255,255,255))
 
         self.screen.blit(lives_text, (10, 10))
         self.screen.blit(score_text, (10, 40))
+        self.screen.blit(pepper_text, (10, 70))
+
+
+    def use_pepper(self):
+        if self.player.pepper <= 0:
+            return
+
+        self.player.pepper -= 1
+
+        spray_range = 80
+        spray_rect = pygame.Rect(
+            self.player.rect.centerx,
+            self.player.rect.centery - 10,
+            spray_range * self.player.facing,
+            20
+        )
+
+        # Normalize rect if facing left
+        if self.player.facing < 0:
+            spray_rect.x -= spray_range
+            spray_rect.width = spray_range
+
+        for enemy in self.level.enemies:
+            if spray_rect.colliderect(enemy.rect):
+                enemy.freeze()
 
 
     def run(self):
@@ -112,12 +138,16 @@ class Game:
                 if event.type == pygame.QUIT:
                     running = False
                 if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE and self.state == PLAYING:
+                        self.use_pepper()
+
                     if event.key == pygame.K_r and self.state == GAME_OVER:
-                        self.player.lives = 3
                         self.score = 0
                         self.level_index = 0
                         self.load_level()
+                        self.player.full_reset(self.level.player_start)
                         self.state = PLAYING
+
 
             self.update()
             self.draw()

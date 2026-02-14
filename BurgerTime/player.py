@@ -14,9 +14,20 @@ class Player(pygame.sprite.Sprite):
         self.vel_y = 0
         self.lives = 3
 
+        self.pepper = 5
+        self.facing = 1  # 1 = right, -1 = left
+
+
     def reset_position(self, pos):
         self.rect.center = pos
         self.vel_y = 0
+
+    def full_reset(self, start_pos):
+        self.lives = 3
+        self.pepper = 5
+        self.vel_y = 0
+        self.rect.center = start_pos
+
 
     def update(self, keys, level):
         self.vel_y += GRAVITY
@@ -32,5 +43,9 @@ class Player(pygame.sprite.Sprite):
         if on_platform:
             if keys[pygame.K_LEFT]:
                 self.rect.x -= PLAYER_SPEED
+                self.facing = -1
+
             if keys[pygame.K_RIGHT]:
                 self.rect.x += PLAYER_SPEED
+                self.facing = 1
+

@@ -13,7 +13,17 @@ class Enemy(pygame.sprite.Sprite):
 
         self.vel_y = 0
 
+        self.frozen = False
+        self.freeze_timer = 0
+
+
     def update(self, player, level):
+        if self.frozen:
+            self.freeze_timer -= 1
+            if self.freeze_timer <= 0:
+                self.frozen = False
+            return
+
         self.vel_y += GRAVITY
         self.rect.y += self.vel_y
 
@@ -29,3 +39,8 @@ class Enemy(pygame.sprite.Sprite):
                 self.rect.x += ENEMY_SPEED
             else:
                 self.rect.x -= ENEMY_SPEED
+
+    def freeze(self, duration=120):
+        self.frozen = True
+        self.freeze_timer = duration
+
