@@ -21,12 +21,12 @@ LEVELS = [
             (0, 450, 800, 10),
         ],
         "ladders": [
-            (350, 150, 300), 
-            (350, 300, 450),
+            (300, 140, 230), 
+            (350, 240, 320),
         ],
         "player_start": (120, 100),
         "enemies": [
-            (500, 100),
+            (500, 400),
         ],
         "ingredients": [
             ("bun_top.png", 120, 120),
@@ -76,7 +76,8 @@ class Game:
         keys = pygame.key.get_pressed()
 
         if self.state == PLAYING:
-            self.player.update(keys, self.level)
+            self.player.update(self.level, self.level.ladders, keys)
+
 
             for enemy in self.level.enemies:
                 enemy.update(self.player, self.level)

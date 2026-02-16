@@ -17,6 +17,8 @@ class Player(pygame.sprite.Sprite):
         self.pepper = 5
         self.facing = 1  # 1 = right, -1 = left
 
+        self.on_ladder = False
+        self.climbing = False
 
     def reset_position(self, pos):
         self.rect.center = pos
@@ -29,9 +31,30 @@ class Player(pygame.sprite.Sprite):
         self.rect.center = start_pos
 
 
-    def update(self, keys, level):
-        self.vel_y += GRAVITY
-        self.rect.y += self.vel_y
+    def update(self, level, ladders, keys):
+        ladder = self.check_ladder(ladders)
+
+        # Start climbing
+        if ladder and (keys[pygame.K_UP] or keys[pygame.K_DOWN]):
+            self.climbing = True
+            self.vel_y = 0
+
+        # Climbing movement
+        if self.climbing:
+            if keys[pygame.K_UP]:
+                self.rect.y -= PLAYER_SPEED
+            elif keys[pygame.K_DOWN]:
+                self.rect.y += PLAYER_SPEED
+
+            # Stop climbing if leaving ladder bounds
+            if not ladder or not ladder.rect.colliderect(self.rect):
+                self.climbing = False
+
+            return  # skip gravity while climbing
+
+        if not self.climbing:
+            self.vel_y += GRAVITY
+            self.rect.y += self.vel_y
 
         on_platform = False
         for p in level.platforms:
@@ -49,3 +72,12 @@ class Player(pygame.sprite.Sprite):
                 self.rect.x += PLAYER_SPEED
                 self.facing = 1
 
+    def check_ladder(self, ladders):
+        self.on_ladder = False
+
+        for ladder in ladders:
+            if self.rect.colliderect(ladder.rect):
+                self.on_ladder = True
+                return ladder
+
+        return None
