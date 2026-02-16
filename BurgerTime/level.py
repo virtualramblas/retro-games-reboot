@@ -5,34 +5,12 @@ from ingredient import Ingredient
 
 SCREEN_WIDTH = 800
 
-LEVEL_DATA = {
-    "player_start": (100, 100),
-
-    "platforms": [
-        (0, 150, 800, 10),
-        (0, 250, 800, 10),
-        (0, 350, 800, 10),
-        (0, 450, 800, 10),
-    ],
-
-    "ladders": [
-        (200, 150, 250),
-        (400, 250, 350),
-        (600, 350, 450),
-    ],
-
-    "enemies": [
-        (700, 150),
-        (600, 250),
-    ]
-}
-
-
 class Level:
-    def __init__(self, index, assets):
+    def __init__(self, data, assets):
         self.assets = assets
 
-        self.data = LEVEL_DATA
+        #self.data = LEVELS
+        self.data = data
 
         self.player_start = self.data["player_start"]
 
@@ -47,12 +25,20 @@ class Level:
             self.enemies.add(Enemy(e[0], e[1], self.assets))
 
         self.ingredients = pygame.sprite.Group()
+        self.load_ingredients(self.data["ingredients"])
+
 
     def draw(self, screen):
         for p in self.platforms:
             pygame.draw.rect(screen, (255,255,255), p)
 
         self.ladders.draw(screen)
+        self.ingredients.draw(screen)
 
     def is_complete(self):
         return False  # placeholder for ingredient stacking logic
+    
+    def load_ingredients(self, layout_data):
+        for name, x, y in layout_data:
+            ingredient = Ingredient(x, y, self.assets.get(name))
+            self.ingredients.add(ingredient)

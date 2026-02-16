@@ -12,6 +12,30 @@ PLAYING = 0
 RESPAWNING = 1
 GAME_OVER = 2
 
+LEVELS = [
+    {
+        "platforms": [
+            (0, 150, 800, 10),
+            (0, 250, 800, 10),
+            (0, 350, 800, 10),
+            (0, 450, 800, 10),
+        ],
+        "ladders": [
+            (350, 150, 300), 
+            (350, 300, 450),
+        ],
+        "player_start": (120, 100),
+        "enemies": [
+            (500, 100),
+        ],
+        "ingredients": [
+            ("bun_top.png", 120, 120),
+            ("lettuce.png", 120, 220),
+            ("patty.png", 120, 320),
+            ("bun_bottom.png", 120, 420),
+        ]
+    }
+]
 
 class Game:
     def __init__(self):
@@ -34,16 +58,19 @@ class Game:
         self.assets.load("egg.png", (40, 40))
         self.assets.load("ladder.png", (20, 100))
 
-        self.level = Level(self.level_index, self.assets)
+        self.assets.load("bun_top.png", (80, 30))
+        self.assets.load("lettuce.png", (80, 30))
+        self.assets.load("patty.png", (80, 30))
+        self.assets.load("bun_bottom.png", (80, 30))
+
+        self.level = Level(LEVELS[self.level_index], self.assets)
         self.player = Player(self.level.player_start, self.assets)
 
         self.score = 0
 
-
     def load_level(self):
-        self.level = Level(self.level_index, self.assets)
+        self.level = Level(LEVELS[self.level_index], self.assets)
         self.player.reset_position(self.level.player_start)
-
 
     def update(self):
         keys = pygame.key.get_pressed()
