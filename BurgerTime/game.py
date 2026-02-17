@@ -56,7 +56,7 @@ class Game:
         self.assets.load("hotdog.png", (40, 40))
         self.assets.load("pickle.png", (40, 40))
         self.assets.load("egg.png", (40, 40))
-        self.assets.load("ladder.png", (20, 100))
+        self.assets.load("ladder.png", (40, 120))
 
         self.assets.load("bun_top.png", (80, 30))
         self.assets.load("lettuce.png", (80, 30))
